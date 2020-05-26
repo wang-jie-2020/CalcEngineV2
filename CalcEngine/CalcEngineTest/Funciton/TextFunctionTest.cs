@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
-namespace CalcEngineTest
+namespace CalcEngineTest.Funciton
 {
     public class TextFunctionTest : IDisposable
     {

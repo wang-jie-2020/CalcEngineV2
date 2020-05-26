@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit;
 
-namespace CalcEngineTest
+namespace CalcEngineTest.Funciton
 {
     public class StatisticalFunctionTest : IDisposable
     {

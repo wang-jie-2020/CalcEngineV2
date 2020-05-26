@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace CalcEngineTest
+namespace CalcEngineTest.Funciton
 {
     public class MathFunctionTest : IDisposable
     {
