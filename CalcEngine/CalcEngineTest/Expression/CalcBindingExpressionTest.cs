@@ -42,7 +42,6 @@ namespace CalcEngineTest.Expression
             Assert.Equal(student.Age > 20 ? student.Age * 0.8 : student.Age, result);
         }
 
-
         [Fact]
         public void ShouldAddressEquals()
         {
@@ -55,23 +54,6 @@ namespace CalcEngineTest.Expression
         {
             var result = calcEngine.Evaluate("Address.City");
             Assert.Equal(student.Address.City, result);
-        }
-
-        public class Student
-        {
-            public int Id { get; set; }
-
-            public string Name { get; set; }
-
-            public int Age { get; set; }
-
-            public Address Address { get; set; }
-        }
-
-        public class Address
-        {
-            public string Province { get; set; }
-            public string City { get; set; }
         }
 
         public void Dispose()
