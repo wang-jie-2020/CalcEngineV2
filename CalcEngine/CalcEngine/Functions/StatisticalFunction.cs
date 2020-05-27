@@ -9,7 +9,7 @@ namespace CalcEngine.Functions
     /// <summary>
     /// 统计学功能
     /// </summary>
-    public static class StatisticalFunction
+    internal static class StatisticalFunction
     {
         public static void Register(CalcEngine ce)
         {

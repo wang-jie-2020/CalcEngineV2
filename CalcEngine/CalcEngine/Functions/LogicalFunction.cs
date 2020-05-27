@@ -8,7 +8,7 @@ namespace CalcEngine.Functions
     /// <summary>
     /// 逻辑功能
     /// </summary>
-    public static class LogicalFunction
+    internal static class LogicalFunction
     {
         public static void Register(CalcEngine ce)
         {

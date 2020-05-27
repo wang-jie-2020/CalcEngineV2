@@ -14,7 +14,6 @@ namespace CalcEngineTest.Expression
             calcEngine = new CalcEngine.CalcEngine();
         }
 
-
         public void Dispose()
         {
             calcEngine = null;

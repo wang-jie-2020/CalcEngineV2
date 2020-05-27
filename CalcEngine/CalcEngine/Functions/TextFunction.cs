@@ -6,7 +6,7 @@ using CalcEngine.Expressions;
 
 namespace CalcEngine.Functions
 {
-    public static class TextFunction
+    internal static class TextFunction
     {
         public static void Register(CalcEngine ce)
         {

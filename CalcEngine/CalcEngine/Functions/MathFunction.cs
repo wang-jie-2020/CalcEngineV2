@@ -11,7 +11,7 @@ namespace CalcEngine.Functions
     /// <summary>
     /// 数学功能
     /// </summary>
-    public static class MathFunction
+    internal static class MathFunction
     {
         public static void Register(CalcEngine ce)
         {
