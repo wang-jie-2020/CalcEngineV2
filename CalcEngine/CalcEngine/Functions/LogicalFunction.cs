@@ -5,16 +5,21 @@ using CalcEngine.Expressions;
 
 namespace CalcEngine.Functions
 {
+    /// <summary>
+    /// 逻辑功能
+    /// </summary>
     public static class LogicalFunction
     {
         public static void Register(CalcEngine ce)
         {
             ce.RegisterFunction("AND", 1, int.MaxValue, And);
             ce.RegisterFunction("OR", 1, int.MaxValue, Or);
-            ce.RegisterFunction("NOT", 1, Not);
-            ce.RegisterFunction("IF", 3, If);
+
+            ce.RegisterFunction("BOOL", 1, _Bool);
             ce.RegisterFunction("TRUE", 0, True);
             ce.RegisterFunction("FALSE", 0, False);
+
+            ce.RegisterFunction("IF", 3, If);
         }
 
         static object And(List<CalcExpression> p)
@@ -37,16 +42,9 @@ namespace CalcEngine.Functions
             return b;
         }
 
-        static object Not(List<CalcExpression> p)
+        static object _Bool(List<CalcExpression> p)
         {
-            return !(bool)p[0];
-        }
-
-        static object If(List<CalcExpression> p)
-        {
-            return (bool)p[0]
-                ? p[1].Evaluate()
-                : p[2].Evaluate();
+            return (bool)p[0];
         }
 
         static object True(List<CalcExpression> p)
@@ -57,6 +55,13 @@ namespace CalcEngine.Functions
         static object False(List<CalcExpression> p)
         {
             return false;
+        }
+
+        static object If(List<CalcExpression> p)
+        {
+            return (bool)p[0]
+                ? p[1].Evaluate()
+                : p[2].Evaluate();
         }
     }
 }

@@ -1,32 +1,31 @@
 ﻿using CalcEngine.Expressions;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace CalcEngine.Functions.InternalFunction
 {
     /// <summary>
-    /// 记录数学表达式或统计表达式的数学相关
+    /// 记录统计功能的相关
     /// </summary>
     internal class Tally
     {
         protected double _sum, _sum2, _cnt, _min, _max;
-        protected bool _numbersOnly;
+        protected List<double> _vals;
 
-        public Tally()
-        {
-        }
+        protected readonly bool _numbersOnly;
+
+        public Tally() : this(false) { }
 
         public Tally(bool numbersOnly)
         {
             _numbersOnly = numbersOnly;
+            _vals = new List<double>();
         }
-
 
         public void Add(CalcExpression e)
         {
-            // handle enumerables
-            var ienum = e as IEnumerable;
-            if (ienum != null)
+            if (e is IEnumerable ienum)
             {
                 foreach (var value in ienum)
                 {
@@ -35,29 +34,26 @@ namespace CalcEngine.Functions.InternalFunction
                 return;
             }
 
-            // handle expressions
             AddValue(e.Evaluate());
         }
+
         public virtual void AddValue(object value)
         {
-            // conversions
+            //非数字模式时只将非数字转为0，不跳过是统计个数的目的
             if (!_numbersOnly)
             {
-                // arguments that contain text evaluate as 0 (zero). 
-                // empty text ("") evaluates as 0 (zero).
                 if (value == null || value is string)
                 {
                     value = 0;
                 }
-                // arguments that contain TRUE evaluate as 1; 
-                // arguments that contain FALSE evaluate as 0 (zero).
+
+                //true是否作为1待考虑
                 if (value is bool)
                 {
                     value = (bool)value ? 1 : 0;
                 }
             }
 
-            // convert all numeric values to doubles
             if (value != null)
             {
                 var typeCode = Type.GetTypeCode(value.GetType());
@@ -67,13 +63,15 @@ namespace CalcEngine.Functions.InternalFunction
                 }
             }
 
-            // tally
             if (value is double)
             {
                 var dbl = (double)value;
+
+                _vals.Add((double)value);
                 _sum += dbl;
                 _sum2 += dbl * dbl;
                 _cnt++;
+
                 if (_cnt == 1 || dbl < _min)
                 {
                     _min = dbl;
@@ -97,17 +95,32 @@ namespace CalcEngine.Functions.InternalFunction
 
         public double Range() { return _max - _min; }
 
-        public double VarP()
+        /// <summary>
+        /// 中位数
+        /// </summary>
+        /// <returns></returns>
+        public double Median()
         {
-            var avg = Average();
-            return _cnt <= 1 ? 0 : _sum2 / _cnt - avg * avg;
+            var assessments = _vals.ToArray();
+
+            if (_vals.Count <= 0)
+            {
+                return 0;
+            }
+
+            Array.Sort(assessments);
+
+            var arrayLength = assessments.Length;
+
+            if (arrayLength % 2 == 0)
+            {
+                return (assessments[(arrayLength / 2) - 1] + assessments[arrayLength / 2]) / 2;
+            }
+
+            return assessments[(int)Math.Floor((decimal)arrayLength / 2)];
         }
 
-        public double StdP()
-        {
-            var avg = Average();
-            return _cnt <= 1 ? 0 : Math.Sqrt(_sum2 / _cnt - avg * avg);
-        }
+        #region 方差、标准差
 
         public double Var()
         {
@@ -120,5 +133,19 @@ namespace CalcEngine.Functions.InternalFunction
             var avg = Average();
             return _cnt <= 1 ? 0 : Math.Sqrt((_sum2 / _cnt - avg * avg) * _cnt / (_cnt - 1));
         }
+
+        public double VarP()
+        {
+            var avg = Average();
+            return _cnt <= 1 ? 0 : _sum2 / _cnt - avg * avg;
+        }
+
+        public double StdP()
+        {
+            var avg = Average();
+            return _cnt <= 1 ? 0 : Math.Sqrt(_sum2 / _cnt - avg * avg);
+        }
+
+        #endregion
     }
 }

@@ -6,216 +6,293 @@ using CalcEngine.Functions.InternalFunction;
 
 namespace CalcEngine.Functions
 {
+    /// <summary>
+    /// 统计学功能
+    /// </summary>
     public static class StatisticalFunction
     {
         public static void Register(CalcEngine ce)
         {
-            //ce.RegisterFunction("AVEDEV", AveDev, 1, int.MaxValue);
             ce.RegisterFunction("AVERAGE", 1, int.MaxValue, Average);
             ce.RegisterFunction("AVERAGEA", 1, int.MaxValue, AverageA);
-            //BETADIST	Returns the beta cumulative distribution function
-            //BETAINV	Returns the inverse of the cumulative distribution function for a specified beta distribution
-            //BINOMDIST	Returns the individual term binomial distribution probability
-            //CHIDIST	Returns the one-tailed probability of the chi-squared distribution
-            //CHIINV	Returns the inverse of the one-tailed probability of the chi-squared distribution
-            //CHITEST	Returns the test for independence
-            //CONFIDENCE	Returns the confidence interval for a population mean
-            //CORREL	Returns the correlation coefficient between two data sets
+
             ce.RegisterFunction("COUNT", 1, int.MaxValue, Count);
             ce.RegisterFunction("COUNTA", 1, int.MaxValue, CountA);
-            ce.RegisterFunction("COUNTBLANK", 1, int.MaxValue, CountBlank);
-            ce.RegisterFunction("COUNTIF", 2, CountIf);
-            //COVAR	Returns covariance, the average of the products of paired deviations
-            //CRITBINOM	Returns the smallest value for which the cumulative binomial distribution is less than or equal to a criterion value
-            //DEVSQ	Returns the sum of squares of deviations
-            //EXPONDIST	Returns the exponential distribution
-            //FDIST	Returns the F probability distribution
-            //FINV	Returns the inverse of the F probability distribution
-            //FISHER	Returns the Fisher transformation
-            //FISHERINV	Returns the inverse of the Fisher transformation
-            //FORECAST	Returns a value along a linear trend
-            //FREQUENCY	Returns a frequency distribution as a vertical array
-            //FTEST	Returns the result of an F-test
-            //GAMMADIST	Returns the gamma distribution
-            //GAMMAINV	Returns the inverse of the gamma cumulative distribution
-            //GAMMALN	Returns the natural logarithm of the gamma function, Γ(x)
-            //GEOMEAN	Returns the geometric mean
-            //GROWTH	Returns values along an exponential trend
-            //HARMEAN	Returns the harmonic mean
-            //HYPGEOMDIST	Returns the hypergeometric distribution
-            //INTERCEPT	Returns the intercept of the linear regression line
-            //KURT	Returns the kurtosis of a data set
-            //LARGE	Returns the k-th largest value in a data set
-            //LINEST	Returns the parameters of a linear trend
-            //LOGEST	Returns the parameters of an exponential trend
-            //LOGINV	Returns the inverse of the lognormal distribution
-            //LOGNORMDIST	Returns the cumulative lognormal distribution
-            ce.RegisterFunction("MAX", 1, int.MaxValue, Max);
-            ce.RegisterFunction("MAXA", 1, int.MaxValue, MaxA);
-            ce.RegisterFunction("MEDIAN", 1, int.MaxValue, Median);
+            //ce.RegisterFunction("COUNTBLANK", 1, int.MaxValue, CountBlank);
+            //ce.RegisterFunction("COUNTIF", 2, CountIf);
+
             ce.RegisterFunction("MIN", 1, int.MaxValue, Min);
             ce.RegisterFunction("MINA", 1, int.MaxValue, MinA);
-            //MODE	Returns the most common value in a data set
-            //NEGBINOMDIST	Returns the negative binomial distribution
-            //NORMDIST	Returns the normal cumulative distribution
-            //NORMINV	Returns the inverse of the normal cumulative distribution
-            //NORMSDIST	Returns the standard normal cumulative distribution
-            //NORMSINV	Returns the inverse of the standard normal cumulative distribution
-            //PEARSON	Returns the Pearson product moment correlation coefficient
-            //PERCENTILE	Returns the k-th percentile of values in a range
-            //PERCENTRANK	Returns the percentage rank of a value in a data set
-            //PERMUT	Returns the number of permutations for a given number of objects
-            //POISSON	Returns the Poisson distribution
-            //PROB	Returns the probability that values in a range are between two limits
-            //QUARTILE	Returns the quartile of a data set
+
+            ce.RegisterFunction("MAX", 1, int.MaxValue, Max);
+            ce.RegisterFunction("MAXA", 1, int.MaxValue, MaxA);
+
+            ce.RegisterFunction("MEDIAN", 1, int.MaxValue, Median);
             ce.RegisterFunction("RANGE", 1, int.MaxValue, Range);
-            //RANK	Returns the rank of a number in a list of numbers
-            //RSQ	Returns the square of the Pearson product moment correlation coefficient
-            //SKEW	Returns the skewness of a distribution
-            //SLOPE	Returns the slope of the linear regression line
-            //SMALL	Returns the k-th smallest value in a data set
-            //STANDARDIZE	Returns a normalized value
+
+            ce.RegisterFunction("SUM", 1, int.MaxValue, Sum);
+            //ce.RegisterFunction("SUMIF", 2, 3, SumIf);
+
             ce.RegisterFunction("STDEV", 1, int.MaxValue, StDev);
             ce.RegisterFunction("STDEVA", 1, int.MaxValue, StDevA);
             ce.RegisterFunction("STDEVP", 1, int.MaxValue, StDevP);
             ce.RegisterFunction("STDEVPA", 1, int.MaxValue, StDevPA);
-            //STEYX	Returns the standard error of the predicted y-value for each x in the regression
-            //TDIST	Returns the Student's t-distribution
-            //TINV	Returns the inverse of the Student's t-distribution
-            //TREND	Returns values along a linear trend
-            //TRIMMEAN	Returns the mean of the interior of a data set
-            //TTEST	Returns the probability associated with a Student's t-test
+
             ce.RegisterFunction("VAR", 1, int.MaxValue, Var);
             ce.RegisterFunction("VARA", 1, int.MaxValue, VarA);
             ce.RegisterFunction("VARP", 1, int.MaxValue, VarP);
             ce.RegisterFunction("VARPA", 1, int.MaxValue, VarPA);
-            //WEIBULL	Returns the Weibull distribution
-            //ZTEST	Returns the one-tailed probability-value of a z-test
-        }
-
-        private static object Median(List<CalcExpression> parameters)
-        {
-            return GetExtendedTally(parameters, true).Median();
         }
 
         static object Average(List<CalcExpression> p)
         {
             return GetTally(p, true).Average();
         }
+
         static object AverageA(List<CalcExpression> p)
         {
             return GetTally(p, false).Average();
         }
+
         static object Count(List<CalcExpression> p)
         {
             return GetTally(p, true).Count();
         }
+
         static object CountA(List<CalcExpression> p)
         {
             return GetTally(p, false).Count();
         }
-        static object CountBlank(List<CalcExpression> p)
-        {
-            var cnt = 0.0;
-            foreach (CalcExpression e in p)
-            {
-                var ienum = e as System.Collections.IEnumerable;
-                if (ienum != null)
-                {
-                    foreach (var value in ienum)
-                    {
-                        if (IsBlank(value))
-                            cnt++;
-                    }
-                }
-                else
-                {
-                    if (IsBlank(e.Evaluate()))
-                        cnt++;
-                }
-            }
-            return cnt;
-        }
-        static bool IsBlank(object value)
-        {
-            return
-                value == null ||
-                value is string && ((string)value).Length == 0;
-        }
-        static object CountIf(List<CalcExpression> p)
-        {
-            CalcEngine ce = new CalcEngine();
-            var cnt = 0.0;
-            var ienum = p[0] as System.Collections.IEnumerable;
-            if (ienum != null)
-            {
-                var crit = (string)p[1].Evaluate();
-                foreach (var value in ienum)
-                {
-                    if (!IsBlank(value))
-                    {
-                        var exp = string.Format("{0}{1}", value, crit);
-                        if ((bool)ce.Evaluate(exp))
-                            cnt++;
-                    }
-                }
-            }
-            return cnt;
-        }
-        static object Max(List<CalcExpression> p)
-        {
-            return GetTally(p, true).Max();
-        }
-        static object MaxA(List<CalcExpression> p)
-        {
-            return GetTally(p, false).Max();
-        }
+
+        //static object CountBlank(List<CalcExpression> p)
+        //{
+        //    var cnt = 0.0;
+        //    foreach (CalcExpression e in p)
+        //    {
+        //        var ienum = e as System.Collections.IEnumerable;
+        //        if (ienum != null)
+        //        {
+        //            foreach (var value in ienum)
+        //            {
+        //                if (IsBlank(value))
+        //                    cnt++;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (IsBlank(e.Evaluate()))
+        //                cnt++;
+        //        }
+        //    }
+        //    return cnt;
+        //}
+
+        //static bool IsBlank(object value)
+        //{
+        //    return
+        //        value == null ||
+        //        value is string && ((string)value).Length == 0;
+        //}
+
+        //static object CountIf(List<CalcExpression> p)
+        //{
+        //    CalcEngine ce = new CalcEngine();
+        //    var cnt = 0.0;
+        //    var ienum = p[0] as System.Collections.IEnumerable;
+        //    if (ienum != null)
+        //    {
+        //        var crit = (string)p[1].Evaluate();
+        //        foreach (var value in ienum)
+        //        {
+        //            if (!IsBlank(value))
+        //            {
+        //                var exp = string.Format("{0}{1}", value, crit);
+        //                if ((bool)ce.Evaluate(exp))
+        //                    cnt++;
+        //            }
+        //        }
+        //    }
+        //    return cnt;
+        //}
+
         static object Min(List<CalcExpression> p)
         {
             return GetTally(p, true).Min();
         }
+
         static object MinA(List<CalcExpression> p)
         {
             return GetTally(p, false).Min();
         }
+
+        static object Max(List<CalcExpression> p)
+        {
+            return GetTally(p, true).Max();
+        }
+
+        static object MaxA(List<CalcExpression> p)
+        {
+            return GetTally(p, false).Max();
+        }
+
+        static object Median(List<CalcExpression> parameters)
+        {
+            return GetTally(parameters, true).Median();
+        }
+
         static object Range(List<CalcExpression> p)
         {
             return GetTally(p, true).Range();
         }
+
+        static object Sum(List<CalcExpression> p)
+        {
+            var tally = new Tally();
+            foreach (CalcExpression e in p)
+            {
+                tally.Add(e);
+            }
+            return tally.Sum();
+        }
+
+        //static object SumIf(List<CalcExpression> p)
+        //{
+        //    // get parameters
+        //    IEnumerable range = p[0] as IEnumerable;
+        //    IEnumerable sumRange = p.Count < 3 ? range : p[2] as IEnumerable;
+        //    var criteria = p[1].Evaluate();
+
+        //    // build list of values in range and sumRange
+        //    var rangeValues = new List<object>();
+        //    foreach (var value in range)
+        //    {
+        //        rangeValues.Add(value);
+        //    }
+        //    var sumRangeValues = new List<object>();
+        //    foreach (var value in sumRange)
+        //    {
+        //        sumRangeValues.Add(value);
+        //    }
+
+        //    // compute total
+        //    var ce = new CalcEngine();
+        //    var tally = new Tally();
+        //    for (int i = 0; i < Math.Min(rangeValues.Count, sumRangeValues.Count); i++)
+        //    {
+        //        if (ValueSatisfiesCriteria(rangeValues[i], criteria, ce))
+        //        {
+        //            tally.AddValue(sumRangeValues[i]);
+        //        }
+        //    }
+
+        //    // done
+        //    return tally.Sum();
+        //}
+
+        //static bool ValueSatisfiesCriteria(object value, object criteria, CalcEngine ce)
+        //{
+        //    // safety...
+        //    if (value == null)
+        //    {
+        //        return false;
+        //    }
+
+        //    // if criteria is a number, straight comparison
+        //    if (criteria is double)
+        //    {
+        //        return (double)value == (double)criteria;
+        //    }
+
+        //    // convert criteria to string
+        //    var cs = criteria as string;
+        //    if (!string.IsNullOrEmpty(cs))
+        //    {
+        //        // if criteria is an expression (e.g. ">20"), use calc engine
+        //        if (cs[0] == '=' || cs[0] == '<' || cs[0] == '>')
+        //        {
+        //            // build expression
+        //            var expression = string.Format("{0}{1}", value, cs);
+
+        //            // add quotes if necessary
+        //            var pattern = @"(\w+)(\W+)(\w+)";
+        //            var m = Regex.Match(expression, pattern);
+        //            if (m.Groups.Count == 4)
+        //            {
+        //                double d;
+        //                if (!double.TryParse(m.Groups[1].Value, out d) ||
+        //                    !double.TryParse(m.Groups[3].Value, out d))
+        //                {
+        //                    expression = string.Format("\"{0}\"{1}\"{2}\"",
+        //                        m.Groups[1].Value,
+        //                        m.Groups[2].Value,
+        //                        m.Groups[3].Value);
+        //                }
+        //            }
+
+        //            // evaluate
+        //            return (bool)ce.Evaluate(expression);
+        //        }
+
+        //        // if criteria is a regular expression, use regex
+        //        if (cs.IndexOf('*') > -1)
+        //        {
+        //            var pattern = cs.Replace(@"\", @"\\");
+        //            pattern = pattern.Replace(".", @"\");
+        //            pattern = pattern.Replace("*", ".*");
+        //            return Regex.IsMatch(value.ToString(), pattern, RegexOptions.IgnoreCase);
+        //        }
+
+        //        // straight string comparison 
+        //        return string.Equals(value.ToString(), cs, StringComparison.OrdinalIgnoreCase);
+        //    }
+
+        //    // should never get here?
+        //    System.Diagnostics.Debug.Assert(false, "failed to evaluate criteria in SumIf");
+        //    return false;
+        //}
+
         static object StDev(List<CalcExpression> p)
         {
             return GetTally(p, true).Std();
         }
+
         static object StDevA(List<CalcExpression> p)
         {
             return GetTally(p, false).Std();
         }
+
         static object StDevP(List<CalcExpression> p)
         {
             return GetTally(p, true).StdP();
         }
+
         static object StDevPA(List<CalcExpression> p)
         {
             return GetTally(p, false).StdP();
         }
+
         static object Var(List<CalcExpression> p)
         {
             return GetTally(p, true).Var();
         }
+
         static object VarA(List<CalcExpression> p)
         {
             return GetTally(p, false).Var();
         }
+
         static object VarP(List<CalcExpression> p)
         {
             return GetTally(p, true).VarP();
         }
+
         static object VarPA(List<CalcExpression> p)
         {
             return GetTally(p, false).VarP();
         }
 
-        // utility for tallying statistics
+        #region Tally
+
         static Tally GetTally(List<CalcExpression> p, bool numbersOnly)
         {
             var tally = new Tally(numbersOnly);
@@ -226,14 +303,6 @@ namespace CalcEngine.Functions
             return tally;
         }
 
-        internal static TallyExtend GetExtendedTally(List<CalcExpression> p, bool numbersOnly)
-        {
-            var tally = new TallyExtend(numbersOnly);
-            foreach (CalcExpression e in p)
-            {
-                tally.Add(e);
-            }
-            return tally;
-        }
+        #endregion
     }
 }

@@ -13,24 +13,45 @@ namespace CalcEngineTest.Funciton
             calcEngine = new CalcEngine.CalcEngine();
         }
 
-        [Fact]
-        public void ShouldEquals()
+        [Theory]
+        [InlineData("PI", Math.PI)]
+        [InlineData("POWER(2,4)", 16.0)]
+        [InlineData("ABS(12)", 12.0)]
+        [InlineData("ABS(-12)", 12.0)]
+
+        [InlineData("CEILING(1)", 1.0)]
+        [InlineData("CEILING(1.1)", 2.0)]
+        [InlineData("CEILING(1.6)", 2.0)]
+        [InlineData("CEILING(-1)", -1.0)]
+        [InlineData("CEILING(-1.1)", -1.0)]
+        [InlineData("CEILING(-1.6)", -1.0)]
+
+        [InlineData("FLOOR(1)", 1.0)]
+        [InlineData("FLOOR(1.1)", 1.0)]
+        [InlineData("FLOOR(1.6)", 1.0)]
+        [InlineData("FLOOR(-1)", -1.0)]
+        [InlineData("FLOOR(-1.1)", -2.0)]
+        [InlineData("FLOOR(-1.6)", -2.0)]
+
+        [InlineData("INT(1)", 1.0)]
+        [InlineData("INT(1.1)", 1.0)]
+        [InlineData("INT(1.6)", 1.0)]
+        [InlineData("INT(-1)", -1.0)]
+        [InlineData("INT(-1.1)", -1.0)]
+        [InlineData("INT(-1.6)", -1.0)]
+
+        [InlineData("ROUND(1.5)", 2.0)]
+        [InlineData("ROUND(2.5)", 2.0)]
+        [InlineData("ROUND(-1.5)", -2.0)]
+        [InlineData("ROUND(-2.5)", -2.0)]
+        [InlineData("ROUNDE(1.5)", 2.0)]
+        [InlineData("ROUNDE(2.5)", 3.0)]
+        [InlineData("ROUNDE(-1.5)", -2.0)]
+        [InlineData("ROUNDE(-2.5)", -3.0)]
+        public void ShouldMathExpressionEquals(string expression, object expected)
         {
-            Dictionary<string, double> keyValuePairs = new Dictionary<string, double>();
-
-            keyValuePairs.Add("ABS(-12)", 12.0);
-            keyValuePairs.Add("ABS(+12)", 12.0);
-            keyValuePairs.Add("CEILING(1.8)", Math.Ceiling(1.8));
-            keyValuePairs.Add("INT(1.8)", 1);
-            keyValuePairs.Add("FLOOR(1.8)", Math.Floor(1.8));
-            keyValuePairs.Add("POWER(2,4)", Math.Pow(2, 4));
-            keyValuePairs.Add("PI", Math.PI);
-
-            foreach (var item in keyValuePairs)
-            {
-                var result = calcEngine.Evaluate(item.Key);
-                Assert.Equal(item.Value, result);
-            }
+            var result = calcEngine.Evaluate(expression);
+            Assert.Equal(expected, result);
         }
 
         public void Dispose()

@@ -28,29 +28,29 @@ namespace CalcEngineTest.Funciton
         [InlineData("OR(true, false)", true)]
         [InlineData("OR(false, true)", true)]
         [InlineData("OR(false, false)", false)]
-        public void ShouldOrEquals(string expression, bool expected)
+        public void ShouldOrExpressionEquals(string expression, bool expected)
         {
             var result = calcEngine.Evaluate(expression);
             Assert.Equal(expected, result);
         }
 
         [Theory]
-        [InlineData("TRUE()", true)]
-        [InlineData("FALSE()", false)]
-        public void ShouldExpressionEquals(string expression, bool expected)
+        [InlineData("BOOL(5>4)", true)]
+        [InlineData("BOOL(5<4)", false)]
+        public void ShouldBoolExpressionEquals(string expression, bool expected)
         {
             var result = calcEngine.Evaluate(expression);
             Assert.Equal(expected, result);
         }
 
-        [Theory]
-        [InlineData("NOT(true)", false)]
-        [InlineData("NOT(false)", true)]
-        public void ShouldNotExpressionEquals(string expression, bool expected)
-        {
-            var result = calcEngine.Evaluate(expression);
-            Assert.Equal(expected, result);
-        }
+        //[Theory]
+        //[InlineData("NOT(true)", false)]
+        //[InlineData("NOT(false)", true)]
+        //public void ShouldNotExpressionEquals(string expression, bool expected)
+        //{
+        //    var result = calcEngine.Evaluate(expression);
+        //    Assert.Equal(expected, result);
+        //}
 
         [Theory]
         [InlineData("IF(5 > 4, true, false)", true)]

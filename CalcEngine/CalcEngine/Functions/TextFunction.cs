@@ -10,33 +10,30 @@ namespace CalcEngine.Functions
     {
         public static void Register(CalcEngine ce)
         {
-            //ce.RegisterFunction("ASC	Changes full-width (double-byte) English letters or katakana within a character string to half-width (single-byte) characters
-            //ce.RegisterFunction("BAHTTEXT	Converts a number to text, using the ß (baht) currency format
-            ce.RegisterFunction("CHAR", 1, _Char); // Returns the character specified by the code number
-            //ce.RegisterFunction("CLEAN	Removes all nonprintable characters from text
-            ce.RegisterFunction("CODE", 1, Code); // Returns a numeric code for the first character in a text string
-            ce.RegisterFunction("CONCATENATE", 1, int.MaxValue, Concat); //	Joins several text items into one text item
-            //ce.RegisterFunction("DOLLAR	Converts a number to text, using the $ (dollar) currency format
-            //ce.RegisterFunction("EXACT	Checks to see if two text values are identical
-            ce.RegisterFunction("FIND", 2, 3, Find); //Finds one text value within another (case-sensitive)
-            //ce.RegisterFunction("FIXED	Formats a number as text with a fixed number of decimals
-            //ce.RegisterFunction("JIS	Changes half-width (single-byte) English letters or katakana within a character string to full-width (double-byte) characters
-            ce.RegisterFunction("LEFT", 1, 2, Left); // LEFTB	Returns the leftmost characters from a text value
-            ce.RegisterFunction("LEN", 1, Len); //, Returns the number of characters in a text string
-            ce.RegisterFunction("LOWER", 1, Lower); //	Converts text to lowercase
-            ce.RegisterFunction("MID", 3, Mid); // Returns a specific number of characters from a text string starting at the position you specify
-            //ce.RegisterFunction("PHONETIC	Extracts the phonetic (furigana) characters from a text string
-            ce.RegisterFunction("PROPER", 1, Proper); // Capitalizes the first letter in each word of a text value
-            ce.RegisterFunction("REPLACE", 4, Replace); // Replaces characters within text
-            ce.RegisterFunction("REPT", 2, Rept); // Repeats text a given number of times
-            ce.RegisterFunction("RIGHT", 1, 2, Right); // Returns the rightmost characters from a text value
-            ce.RegisterFunction("SEARCH", 2, Search); // Finds one text value within another (not case-sensitive)
-            ce.RegisterFunction("SUBSTITUTE", 3, 4, Substitute); // Substitutes new text for old text in a text string
-            ce.RegisterFunction("T", 1, T); // Converts its arguments to text
-            ce.RegisterFunction("TEXT", 2, _Text); // Formats a number and converts it to text
-            ce.RegisterFunction("TRIM", 1, Trim); // Removes spaces from text
-            ce.RegisterFunction("UPPER", 1, Upper); // Converts text to uppercase
-            ce.RegisterFunction("VALUE", 1, Value); // Converts a text argument to a number
+            ce.RegisterFunction("CHAR", 1, _Char);
+            ce.RegisterFunction("CODE", 1, Code);
+            ce.RegisterFunction("CONCAT", 1, int.MaxValue, Concat);
+
+            ce.RegisterFunction("FIND", 2, 3, Find);    //FIND(input,para,startIndex=0)
+
+            ce.RegisterFunction("LEFT", 1, 2, Left);    //LEFT(input,length=1)
+            ce.RegisterFunction("LEN", 1, Len);
+            ce.RegisterFunction("LOWER", 1, Lower);
+
+            ce.RegisterFunction("MID", 3, Mid); //MID(input,startIndex,endIndex)
+
+            ce.RegisterFunction("REPLACE", 4, Replace); //REPLACE(input,startIndex,length,replace)
+            ce.RegisterFunction("REPT", 2, Rept);   //Rept(input,repeatCount)
+            ce.RegisterFunction("RIGHT", 1, 2, Right); //RIGHT(input,length=1)
+
+            ce.RegisterFunction("SEARCH", 2, Search);
+            //ce.RegisterFunction("SUBSTITUTE", 3, 4, Substitute);
+
+            ce.RegisterFunction("TOSTRING", 1, ToString);
+            ce.RegisterFunction("TEXT", 2, _Text);  //TEXT(input,format)
+            ce.RegisterFunction("TRIM", 1, Trim);
+            ce.RegisterFunction("UPPER", 1, Upper);
+            ce.RegisterFunction("VALUE", 1, Value);
         }
 
         static object _Char(List<CalcExpression> p)
@@ -44,11 +41,13 @@ namespace CalcEngine.Functions
             var c = (char)(int)p[0];
             return c.ToString();
         }
+
         static object Code(List<CalcExpression> p)
         {
             var s = (string)p[0];
             return (int)s[0];
         }
+
         static object Concat(List<CalcExpression> p)
         {
             var sb = new StringBuilder();
@@ -58,10 +57,12 @@ namespace CalcEngine.Functions
             }
             return sb.ToString();
         }
+
         static object Find(List<CalcExpression> p)
         {
             return IndexOf(p, StringComparison.Ordinal);
         }
+
         static int IndexOf(List<CalcExpression> p, StringComparison cmp)
         {
             var srch = (string)p[0];
@@ -74,6 +75,7 @@ namespace CalcEngine.Functions
             var index = text.IndexOf(srch, start, cmp);
             return index > -1 ? index + 1 : index;
         }
+
         static object Left(List<CalcExpression> p)
         {
             var n = 1;
@@ -83,26 +85,24 @@ namespace CalcEngine.Functions
             }
             return ((string)p[0]).Substring(0, n);
         }
+
         static object Len(List<CalcExpression> p)
         {
             return ((string)p[0]).Length;
         }
+
         static object Lower(List<CalcExpression> p)
         {
             return ((string)p[0]).ToLower();
         }
+
         static object Mid(List<CalcExpression> p)
         {
             return ((string)p[0]).Substring((int)p[1] - 1, (int)p[2]);
         }
-        static object Proper(List<CalcExpression> p)
-        {
-            var s = (string)p[0];
-            return s.Substring(0, 1).ToUpper() + s.Substring(1).ToLower();
-        }
+
         static object Replace(List<CalcExpression> p)
         {
-            // old start len new
             var s = (string)p[0];
             var start = (int)p[1] - 1;
             var len = (int)p[2];
@@ -115,6 +115,7 @@ namespace CalcEngine.Functions
 
             return sb.ToString();
         }
+
         static object Rept(List<CalcExpression> p)
         {
             var sb = new StringBuilder();
@@ -125,6 +126,7 @@ namespace CalcEngine.Functions
             }
             return sb.ToString();
         }
+
         static object Right(List<CalcExpression> p)
         {
             var n = 1;
@@ -135,55 +137,62 @@ namespace CalcEngine.Functions
             var s = (string)p[0];
             return s.Substring(s.Length - n);
         }
+
         static object Search(List<CalcExpression> p)
         {
             return IndexOf(p, StringComparison.OrdinalIgnoreCase);
         }
-        static object Substitute(List<CalcExpression> p)
-        {
-            // get parameters
-            var text = (string)p[0];
-            var oldText = (string)p[1];
-            var newText = (string)p[2];
 
-            // if index not supplied, replace all
-            if (p.Count == 3)
-            {
-                return text.Replace(oldText, newText);
-            }
+        //static object Substitute(List<CalcExpression> p)
+        //{
+        //    // get parameters
+        //    var text = (string)p[0];
+        //    var oldText = (string)p[1];
+        //    var newText = (string)p[2];
 
-            // replace specific instance
-            int index = (int)p[3];
-            if (index < 1)
-            {
-                throw new Exception("Invalid index in Substitute.");
-            }
-            int pos = text.IndexOf(oldText);
-            while (pos > -1 && index > 1)
-            {
-                pos = text.IndexOf(oldText, pos + 1);
-                index--;
-            }
-            return pos > -1
-                ? text.Substring(0, pos) + newText + text.Substring(pos + oldText.Length)
-                : text;
-        }
-        static object T(List<CalcExpression> p)
+        //    // if index not supplied, replace all
+        //    if (p.Count == 3)
+        //    {
+        //        return text.Replace(oldText, newText);
+        //    }
+
+        //    // replace specific instance
+        //    int index = (int)p[3];
+        //    if (index < 1)
+        //    {
+        //        throw new Exception("Invalid index in Substitute.");
+        //    }
+        //    int pos = text.IndexOf(oldText);
+        //    while (pos > -1 && index > 1)
+        //    {
+        //        pos = text.IndexOf(oldText, pos + 1);
+        //        index--;
+        //    }
+        //    return pos > -1
+        //        ? text.Substring(0, pos) + newText + text.Substring(pos + oldText.Length)
+        //        : text;
+        //}
+
+        static object ToString(List<CalcExpression> p)
         {
             return (string)p[0];
         }
+
         static object _Text(List<CalcExpression> p)
         {
             return ((double)p[0]).ToString((string)p[1], CultureInfo.CurrentCulture);
         }
+
         static object Trim(List<CalcExpression> p)
         {
             return ((string)p[0]).Trim();
         }
+
         static object Upper(List<CalcExpression> p)
         {
             return ((string)p[0]).ToUpper();
         }
+
         static object Value(List<CalcExpression> p)
         {
             return double.Parse((string)p[0], NumberStyles.Any, CultureInfo.InvariantCulture);

@@ -30,6 +30,32 @@ namespace CalcEngineTest.Funciton
             Assert.Equal(expected, result);
         }
 
+        [Theory]
+        [InlineData("MIN(1, 3, 3, 1, true, false, \"hello\")", 1)]
+        [InlineData("MINA(1, 3, 3, 1, true, false, \"hello\")", 0)]
+        public void ShouldMinExpressionEquals(string expression, double expected)
+        {
+            var result = calcEngine.Evaluate(expression);
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("MAX(1, 3, 3, 1, true, false, \"hello\")", 3)]
+        [InlineData("MAXA(1, 3, 3, 1, true, false, \"hello\")", 3)]
+        public void ShouldMaxExpressionEquals(string expression, double expected)
+        {
+            var result = calcEngine.Evaluate(expression);
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("SUM(1, 3, 3, 1)", 8)]
+        public void ShouldSumExpressionEquals(string expression, double expected)
+        {
+            var result = calcEngine.Evaluate(expression);
+            Assert.Equal(expected, result);
+        }
+
         public void Dispose()
         {
             calcEngine = null;
