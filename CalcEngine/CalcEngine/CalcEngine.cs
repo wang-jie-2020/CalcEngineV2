@@ -6,16 +6,18 @@ using System.Text;
 
 namespace CalcEngine
 {
+    /// <summary>
+    /// 计算引擎构造、设置
+    /// </summary>
     public partial class CalcEngine
     {
         public CalcEngine()
         {
             CultureInfo = CultureInfo.InvariantCulture;
-
             _cache = new CalcExpressionCache(this);
 
-            _tks = GetSymbolTable();
-            _fns = GetFunctionTable();
+            InitSymbol();
+            InitFunction();
         }
 
         /// <summary>
@@ -65,7 +67,7 @@ namespace CalcEngine
         }
 
         /// <summary>
-        /// 解析表达式时是否进行优化
+        /// 解析表达式时是否进行优化（缩减字面量）
         /// </summary>
         public bool OptimizeExpressions { get; set; } = true;
 

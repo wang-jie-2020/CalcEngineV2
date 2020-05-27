@@ -9,18 +9,11 @@ using CalcEngine.Functions;
 namespace CalcEngine
 {
     /// <summary>
-    /// CalcEngine parses strings and returns Expression objects that can 
-    /// be evaluated.
+    /// 计算引擎核心
     /// </summary>
-    /// <remarks>
-    /// <para>This class has three extensibility points:</para>
-    /// <para>Use the <b>DataContext</b> property to add an object's properties to the engine scope.</para>
-    /// <para>Use the <b>RegisterFunction</b> method to define custom functions.</para>
-    /// <para>Override the <b>GetExternalObject</b> method to add arbitrary variables to the engine scope.</para>
-    /// </remarks>
     public partial class CalcEngine
     {
-        #region ** fields
+        #region 设置、持久字段
 
         //本地化
         CultureInfo _ci;
@@ -38,23 +31,16 @@ namespace CalcEngine
         //符号集,+-*/
         Dictionary<object, Token> _tks;
 
-        // members
-        string _expr;                       // expression being parsed
-        int _len;                       // length of the expression being parsed
-        int _ptr;                       // current pointer into expression
-
-        Token _token;                       // current token being parsed
-
         #endregion
 
-        #region ** token/keyword tables
+        #region Init
 
-        // build/get static token table
-        Dictionary<object, Token> GetSymbolTable()
+        void InitSymbol()
         {
             if (_tks == null)
             {
                 _tks = new Dictionary<object, Token>();
+
                 AddToken('+', Tkid.ADD, Tktype.ADDSUB);
                 AddToken('-', Tkid.SUB, Tktype.ADDSUB);
                 AddToken('(', Tkid.OPEN, Tktype.GROUP);
@@ -70,95 +56,39 @@ namespace CalcEngine
                 AddToken("<>", Tkid.NE, Tktype.COMPARE);
                 AddToken(">=", Tkid.GE, Tktype.COMPARE);
                 AddToken("<=", Tkid.LE, Tktype.COMPARE);
-
-                // list separator is localized, not necessarily a comma
-                // so it can't be on the static table
-                //AddToken(',', TKID.COMMA, TKTYPE.GROUP);
+                //AddToken(',', Tkid.COMMA, Tktype.GROUP);       // list separator is localized, not necessarily a comma,so it can't be on the static table
             }
-            return _tks;
         }
+
         void AddToken(object symbol, Tkid id, Tktype type)
         {
             var token = new Token(symbol, id, type);
             _tks.Add(symbol, token);
         }
 
-        // build/get static keyword table
-        Dictionary<string, FunctionDefinition> GetFunctionTable()
+        void InitFunction()
         {
             if (_fns == null)
             {
-                // create table
                 _fns = new Dictionary<string, FunctionDefinition>(StringComparer.InvariantCultureIgnoreCase);
 
-                // register built-in functions (and constants)
                 LogicalFunction.Register(this);
                 MathFunction.Register(this);
                 TextFunction.Register(this);
                 StatisticalFunction.Register(this);
             }
-            return _fns;
         }
 
         #endregion
 
-
-
-
-
-
-        #region ** object model
-
         /// <summary>
-        /// Parses a string into an <see cref="Expression"/>.
+        /// 计算表达式
         /// </summary>
-        /// <param name="expression">String to parse.</param>
-        /// <returns>An <see cref="Expression"/> object that can be evaluated.</returns>
-        public CalcExpression Parse(string expression)
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public object Evaluate(string expression)
         {
-            // initialize
-            _expr = expression;
-            _len = _expr.Length;
-            _ptr = 0;
-
-            // skip leading equals sign
-            if (_len > 0 && _expr[0] == '=')
-            {
-                _ptr++;
-            }
-
-            // parse the expression
-            var expr = ParseExpression();
-
-            // check for errors
-            if (_token.Id != Tkid.END)
-            {
-                Throw();
-            }
-
-            // optimize expression
-            if (OptimizeExpressions)
-            {
-                expr = expr.Optimize();
-            }
-
-            // done
-            return expr;
-        }
-
-        /// <summary>
-        /// Evaluates a string.
-        /// </summary>
-        /// <param name="expression">Expression to evaluate.</param>
-        /// <returns>The value of the expression.</returns>
-        /// <remarks>
-        /// If you are going to evaluate the same expression several times,
-        /// it is more efficient to parse it only once using the <see cref="Parse"/>
-        /// method and then using the Expression.Evaluate method to evaluate
-        /// the parsed expression.
-        /// </remarks>
-		public object Evaluate(string expression)
-        {
+            //默认将表达式加入缓存，提高效率
             var x = _cache != null
                 ? _cache[expression]
                 : Parse(expression);
@@ -166,10 +96,53 @@ namespace CalcEngine
             return x.Evaluate();
         }
 
-        #endregion
+        /// <summary>
+        /// 字符串解析为表达式
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public CalcExpression Parse(string expression)
+        {
+            _expr = expression;
+            _len = _expr.Length;
+            _ptr = 0;
+
+            //第一个‘=’字符不作为解析内容
+            if (_len > 0 && _expr[0] == '=')
+            {
+                _ptr++;
+            }
+
+            //递归
+            var expr = ParseExpression();
+
+            if (_token.Id != Tkid.END)
+            {
+                Throw();
+            }
+
+            if (OptimizeExpressions)
+            {
+                expr = expr.Optimize();
+            }
+
+            return expr;
+        }
+
+        #region 核心函数
+
+        string _expr;    //表达式                  
+        int _len;        //表达式长度                
+        int _ptr;        //当前指向 
+        Token _token;    //当前Token               
 
         #region ** private stuff
 
+        /// <summary>
+        /// 过程开始
+        /// </summary>
+        /// <returns
+        /// ></returns>
         CalcExpression ParseExpression()
         {
             GetToken();
@@ -346,36 +319,94 @@ namespace CalcEngine
 
         void GetToken()
         {
-            // eat white space 
+            //空格不计
             while (_ptr < _len && _expr[_ptr] <= ' ')
             {
                 _ptr++;
             }
 
-            // are we done?
+            //到达字符串尾，结束
             if (_ptr >= _len)
             {
                 _token = new Token(null, Tkid.END, Tktype.GROUP);
                 return;
             }
 
-            // prepare to parse
-            int i;
+            int index = 0;  //计数提出来，少写几个int i
+
             var c = _expr[_ptr];
 
-            // operators
-            // this gets called a lot, so it's pretty optimized.
-            // note that operators must start with non-letter/digit characters.
+            //转义字符
+            if (c == '\"')
+            {
+                index = 1;
+                for (; index + _ptr < _len; index++)
+                {
+                    c = _expr[_ptr + index];
+                    if (c != '\"')
+                        continue;
+
+                    //跳过双重转移，即"\\xxxx"
+                    char cNext = index + _ptr < _len - 1 ? _expr[_ptr + index + 1] : ' ';
+                    if (cNext != '\"')
+                        break;
+
+                    index++;
+                }
+
+                if (c != '\"')
+                {
+                    Throw("Can't find final quote.");
+                }
+
+                var lit = _expr.Substring(_ptr + 1, index - 1);
+                _ptr += index + 1;
+                _token = new Token(lit.Replace("\"\"", "\""), Tkid.ATOM, Tktype.LITERAL);
+                return;
+            }
+
+            // #代表什么？？不清楚。。。
+            if (c == '#')
+            {
+                index = 1;
+                for (; index + _ptr < _len; index++)
+                {
+                    c = _expr[_ptr + index];
+                    if (c == '#')
+                        break;
+                }
+
+                if (c != '#')
+                {
+                    Throw("Can't find final date delimiter ('#').");
+                }
+
+                var lit = _expr.Substring(_ptr + 1, index - 1);
+                _ptr += index + 1;
+                _token = new Token(DateTime.Parse(lit, _ci), Tkid.ATOM, Tktype.LITERAL);
+                return;
+            }
+
             var isLetter = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
             var isDigit = c >= '0' && c <= '9';
+
+            /*  
+             *  非字符、数字的特殊情况：
+             *  1.浮点数的开始，比如'.5'，这种情况看后一位是不是数字
+             *  2.操作符，这种情况从符号集中查找
+             *  其余情况不考虑继续处理，只作为原子性Node扔出去
+             */
             if (!isLetter && !isDigit)
             {
-                // if this is a number starting with a decimal, don't parse as operator
                 var nxt = _ptr + 1 < _len ? _expr[_ptr + 1] : 0;
                 bool isNumber = c == _decimal && nxt >= '0' && nxt <= '9';
                 if (!isNumber)
                 {
-                    // look up localized list separator
+                    /*
+                     *  不理解这个if的含义：
+                     *  _listSep表示本地化下的数字步长分割标志，比如中文下1,000,000的','
+                     *  存在单独出现情况？
+                     */
                     if (c == _listSep)
                     {
                         _token = new Token(c, Tkid.COMMA, Tktype.GROUP);
@@ -383,15 +414,14 @@ namespace CalcEngine
                         return;
                     }
 
-                    // look up single-char tokens on table
+                    //从字符集中尝试获取，比如+-*/
                     Token tk;
                     if (_tks.TryGetValue(c, out tk))
                     {
-                        // save token we found
                         _token = tk;
                         _ptr++;
 
-                        // look for double-char tokens (special case)
+                        //可能存在的>=或<=请款情况，单独取一个字符不足以表示符号
                         if (_ptr < _len && (c == '>' || c == '<'))
                         {
                             if (_tks.TryGetValue(_expr.Substring(_ptr - 1, 2), out tk))
@@ -401,24 +431,28 @@ namespace CalcEngine
                             }
                         }
 
-                        // found token on the table
                         return;
                     }
                 }
             }
 
-            // parse numbers
+            /*
+             *  数字，考虑两个情况：1.科学计数法  2.百分数
+             *  总是作为字面量返回 
+             */
             if (isDigit || c == _decimal)
             {
-                var sci = false;
-                var pct = false;
-                var div = -1.0; // use double, not int (this may get really big)
-                var val = 0.0;
-                for (i = 0; i + _ptr < _len; i++)
-                {
-                    c = _expr[_ptr + i];
+                var sci = false;    //科学计数
+                var pct = false;    //百度比
 
-                    // digits always OK
+                var div = -1.0;
+                var val = 0.0;
+
+                index = 0;
+                for (; index + _ptr < _len; index++)
+                {
+                    c = _expr[_ptr + index];
+
                     if (c >= '0' && c <= '9')
                     {
                         val = val * 10 + (c - '0');
@@ -429,42 +463,37 @@ namespace CalcEngine
                         continue;
                     }
 
-                    // one decimal is OK
                     if (c == _decimal && div < 0)
                     {
                         div = 1;
                         continue;
                     }
 
-                    // scientific notation?
                     if ((c == 'E' || c == 'e') && !sci)
                     {
                         sci = true;
-                        c = _expr[_ptr + i + 1];
-                        if (c == '+' || c == '-') i++;
+                        c = _expr[_ptr + index + 1];
+                        if (c == '+' || c == '-') index++;
                         continue;
                     }
 
-                    // percentage?
                     if (c == _percent)
                     {
                         pct = true;
-                        i++;
+                        index++;
                         break;
                     }
 
-                    // end of literal
                     break;
                 }
 
-                // end of number, get value
                 if (!sci)
                 {
-                    // much faster than ParseDouble
                     if (div > 1)
                     {
                         val /= div;
                     }
+
                     if (pct)
                     {
                         val /= 100.0;
@@ -472,77 +501,29 @@ namespace CalcEngine
                 }
                 else
                 {
-                    var lit = _expr.Substring(_ptr, i);
+                    var lit = _expr.Substring(_ptr, index);
                     val = ParseDouble(lit, _ci);
                 }
 
-                // build token
                 _token = new Token(val, Tkid.ATOM, Tktype.LITERAL);
-
-                // advance pointer and return
-                _ptr += i;
+                _ptr += index;
                 return;
             }
 
-            // parse strings
-            if (c == '\"')
-            {
-                // look for end quote, skip double quotes
-                for (i = 1; i + _ptr < _len; i++)
-                {
-                    c = _expr[_ptr + i];
-                    if (c != '\"') continue;
-                    char cNext = i + _ptr < _len - 1 ? _expr[_ptr + i + 1] : ' ';
-                    if (cNext != '\"') break;
-                    i++;
-                }
-
-                // check that we got the end of the string
-                if (c != '\"')
-                {
-                    Throw("Can't find final quote.");
-                }
-
-                // end of string
-                var lit = _expr.Substring(_ptr + 1, i - 1);
-                _ptr += i + 1;
-                _token = new Token(lit.Replace("\"\"", "\""), Tkid.ATOM, Tktype.LITERAL);
-                return;
-            }
-
-            // parse dates (review)
-            if (c == '#')
-            {
-                // look for end #
-                for (i = 1; i + _ptr < _len; i++)
-                {
-                    c = _expr[_ptr + i];
-                    if (c == '#') break;
-                }
-
-                // check that we got the end of the date
-                if (c != '#')
-                {
-                    Throw("Can't find final date delimiter ('#').");
-                }
-
-                // end of date
-                var lit = _expr.Substring(_ptr + 1, i - 1);
-                _ptr += i + 1;
-                _token = new Token(DateTime.Parse(lit, _ci), Tkid.ATOM, Tktype.LITERAL);
-                return;
-            }
-
-            // identifiers (functions, objects) must start with alpha or underscore
+            //非字母、'_'，也不包含在自定义的前缀的字符，属于非期望
             if (!isLetter && c != '_' && (_idChars == null || _idChars.IndexOf(c) < 0))
             {
                 Throw("Identifier expected.");
             }
 
-            // and must contain only letters/digits/_idChars
-            for (i = 1; i + _ptr < _len; i++)
+            /*
+             *  字符情况，出现字符就认为是内置功能函数的名称
+             *  约定情况下，函数总是以字母、或下划线起始的
+             */
+            index = 1;
+            for (; index + _ptr < _len; index++)
             {
-                c = _expr[_ptr + i];
+                c = _expr[_ptr + index];
                 isLetter = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
                 isDigit = c >= '0' && c <= '9';
                 if (!isLetter && !isDigit && c != '_' && (_idChars == null || _idChars.IndexOf(c) < 0))
@@ -551,13 +532,12 @@ namespace CalcEngine
                 }
             }
 
-            // got identifier
-            var id = _expr.Substring(_ptr, i);
-            _ptr += i;
+            var id = _expr.Substring(_ptr, index);
+            _ptr += index;
             _token = new Token(id, Tkid.ATOM, Tktype.IDENTIFIER);
         }
 
-        static double ParseDouble(string str, CultureInfo ci)
+        double ParseDouble(string str, CultureInfo ci)
         {
             if (str.Length > 0 && str[str.Length - 1] == ci.NumberFormat.PercentSymbol[0])
             {
@@ -635,7 +615,9 @@ namespace CalcEngine
 
         #endregion
 
-        #region ** static helpers
+        #endregion
+
+        #region Throw Error
 
         static void Throw()
         {
