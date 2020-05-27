@@ -4,37 +4,23 @@ using System.Globalization;
 namespace CalcEngine.Expressions
 {
     /// <summary>
-    /// Base class that represents parsed expressions.
+    /// 表达式基类
     /// </summary>
-    /// <remarks>
-    /// For example:
-    /// <code>
-    /// Expression expr = scriptEngine.Parse(strExpression);
-    /// object val = expr.Evaluate();
-    /// </code>
-    /// </remarks>
     public class CalcExpression : IComparable<CalcExpression>
     {
-
-        //---------------------------------------------------------------------------
-        #region ** fields
-
         internal Token _token;
         static CultureInfo _ci = CultureInfo.InvariantCulture;
 
-        #endregion
-
-        //---------------------------------------------------------------------------
-        #region ** ctors
+        #region 构造函数
 
         internal CalcExpression()
         {
-            _token = new Token(null, TKID.ATOM, TKTYPE.IDENTIFIER);
+            _token = new Token(null, Tkid.ATOM, Tktype.LITERAL);
         }
 
         internal CalcExpression(object value)
         {
-            _token = new Token(value, TKID.ATOM, TKTYPE.LITERAL);
+            _token = new Token(value, Tkid.ATOM, Tktype.LITERAL);
         }
 
         internal CalcExpression(Token tk)
@@ -44,18 +30,26 @@ namespace CalcEngine.Expressions
 
         #endregion
 
-        //---------------------------------------------------------------------------
-        #region ** object model
+        #region 核心方法
 
+        /// <summary>
+        /// 计算表达式
+        /// </summary>
+        /// <returns></returns>
         public virtual object Evaluate()
         {
-            if (_token.Type != TKTYPE.LITERAL)
+            //除了字面量，都需要重写此方法
+            if (_token.Type != Tktype.LITERAL)
             {
                 throw new ArgumentException("Bad expression.");
             }
             return _token.Value;
         }
 
+        /// <summary>
+        /// 表达式优化，替换已计算结果
+        /// </summary>
+        /// <returns></returns>
         public virtual CalcExpression Optimize()
         {
             return this;
@@ -63,8 +57,7 @@ namespace CalcEngine.Expressions
 
         #endregion
 
-        //---------------------------------------------------------------------------
-        #region ** implicit converters
+        #region 重载符号
 
         public static implicit operator string(CalcExpression x)
         {
@@ -74,97 +67,79 @@ namespace CalcEngine.Expressions
 
         public static implicit operator double(CalcExpression x)
         {
-            // evaluate
             var v = x.Evaluate();
 
-            // handle doubles
             if (v is double)
             {
                 return (double)v;
             }
 
-            // handle booleans
             if (v is bool)
             {
                 return (bool)v ? 1 : 0;
             }
 
-            // handle dates
             if (v is DateTime)
             {
                 return ((DateTime)v).ToOADate();
             }
 
-            // handle nulls
             if (v == null)
             {
                 return 0;
             }
 
-            // handle everything else
             return (double)Convert.ChangeType(v, typeof(double), _ci);
         }
 
         public static implicit operator bool(CalcExpression x)
         {
-            // evaluate
             var v = x.Evaluate();
 
-            // handle booleans
             if (v is bool)
             {
                 return (bool)v;
             }
 
-            // handle nulls
             if (v == null)
             {
                 return false;
             }
 
-            // handle doubles
             if (v is double)
             {
                 return (double)v == 0 ? false : true;
             }
 
-            // handle everything else
             return (double)x == 0 ? false : true;
         }
 
         public static implicit operator DateTime(CalcExpression x)
         {
-            // evaluate
             var v = x.Evaluate();
 
-            // handle dates
             if (v is DateTime)
             {
                 return (DateTime)v;
             }
 
-            // handle doubles
             if (v is double)
             {
                 return DateTime.FromOADate((double)x);
             }
 
-            // handle everything else
             return (DateTime)Convert.ChangeType(v, typeof(DateTime), _ci);
         }
 
         #endregion
 
-        //---------------------------------------------------------------------------
-        #region ** IComparable<CalcExpression>
+        #region IComparable<CalcExpression>
 
         public int CompareTo(CalcExpression other)
         {
-            // get both values
             var c1 = this.Evaluate() as IComparable;
             var c2 = other.Evaluate() as IComparable;
 
-            // handle nulls
             if (c1 == null && c2 == null)
             {
                 return 0;
@@ -178,13 +153,11 @@ namespace CalcEngine.Expressions
                 return +1;
             }
 
-            // make sure types are the same
             if (c1.GetType() != c2.GetType())
             {
                 c2 = Convert.ChangeType(c2, c1.GetType()) as IComparable;
             }
 
-            // compare
             return c1.CompareTo(c2);
         }
 

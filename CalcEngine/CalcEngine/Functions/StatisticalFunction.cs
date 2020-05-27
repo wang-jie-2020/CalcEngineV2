@@ -226,7 +226,7 @@ namespace CalcEngine.Functions
             return tally;
         }
 
-        public static TallyExtend GetExtendedTally(List<CalcExpression> p, bool numbersOnly)
+        internal static TallyExtend GetExtendedTally(List<CalcExpression> p, bool numbersOnly)
         {
             var tally = new TallyExtend(numbersOnly);
             foreach (CalcExpression e in p)

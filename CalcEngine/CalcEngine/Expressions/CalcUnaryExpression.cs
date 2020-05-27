@@ -3,27 +3,24 @@
 namespace CalcEngine.Expressions
 {
     /// <summary>
-    /// Unary expression, e.g. +123
+    /// 一元表达式
     /// </summary>
-    class CalcUnaryExpression : CalcExpression
+    internal class CalcUnaryExpression : CalcExpression
     {
-        // ** fields
         CalcExpression _expr;
 
-        // ** ctor
         public CalcUnaryExpression(Token tk, CalcExpression expr) : base(tk)
         {
             _expr = expr;
         }
 
-        // ** object model
-        override public object Evaluate()
+        public override object Evaluate()
         {
-            switch (_token.ID)
+            switch (_token.Id)
             {
-                case TKID.ADD:
+                case Tkid.ADD:
                     return +(double)_expr;
-                case TKID.SUB:
+                case Tkid.SUB:
                     return -(double)_expr;
             }
             throw new ArgumentException("Bad expression.");
@@ -32,7 +29,7 @@ namespace CalcEngine.Expressions
         public override CalcExpression Optimize()
         {
             _expr = _expr.Optimize();
-            return _expr._token.Type == TKTYPE.LITERAL
+            return _expr._token.Type == Tktype.LITERAL
                 ? new CalcExpression(this.Evaluate())
                 : this;
         }

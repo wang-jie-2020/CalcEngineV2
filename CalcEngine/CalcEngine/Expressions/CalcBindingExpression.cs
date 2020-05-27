@@ -5,27 +5,27 @@ using System.Reflection;
 
 namespace CalcEngine.Expressions
 {
-    class CalcBindingExpression : CalcExpression
+    /// <summary>
+    /// 属性访问表达式
+    /// </summary>
+    internal class CalcBindingExpression : CalcExpression
     {
-        CalcEngine _ce;
-        CultureInfo _ci;
+        object _dataContext;
         List<BindingInfo> _bindingPath;
+        CultureInfo _ci;
 
-        // ** ctor
-        internal CalcBindingExpression(CalcEngine engine, List<BindingInfo> bindingPath, CultureInfo ci)
+        internal CalcBindingExpression(object dataContext, List<BindingInfo> bindingPath, CultureInfo ci)
         {
-            _ce = engine;
+            _dataContext = dataContext;
             _bindingPath = bindingPath;
             _ci = ci;
         }
 
-        // ** object model
-        override public object Evaluate()
+        public override object Evaluate()
         {
-            return GetValue(_ce.DataContext);
+            return GetValue(_dataContext);
         }
 
-        // ** implementation
         object GetValue(object obj)
         {
             const BindingFlags bf =
@@ -38,27 +38,20 @@ namespace CalcEngine.Expressions
             {
                 foreach (var bi in _bindingPath)
                 {
-                    // get property
                     if (bi.PropertyInfo == null)
                     {
                         bi.PropertyInfo = obj.GetType().GetProperty(bi.Name, bf);
                     }
 
-                    // get object
                     try
                     {
                         obj = bi.PropertyInfo.GetValue(obj, null);
                     }
                     catch
                     {
-                        // REVIEW: is this needed?
                         System.Diagnostics.Debug.Assert(false, "shouldn't happen!");
-                        bi.PropertyInfo = obj.GetType().GetProperty(bi.Name, bf);
-                        bi.PropertyInfoItem = null;
-                        obj = bi.PropertyInfo.GetValue(obj, null);
                     }
 
-                    // handle indexers (lists and dictionaries)
                     if (bi.Parms != null && bi.Parms.Count > 0)
                     {
                         // get indexer property (always called "Item")
@@ -88,10 +81,7 @@ namespace CalcEngine.Expressions
         }
     }
 
-    /// <summary>
-    /// Helper used for building BindingExpression objects.
-    /// </summary>
-    class BindingInfo
+    internal class BindingInfo
     {
         public BindingInfo(string member, List<CalcExpression> parms)
         {

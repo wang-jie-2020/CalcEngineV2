@@ -4,7 +4,10 @@ using System.Collections;
 
 namespace CalcEngine.Functions.InternalFunction
 {
-    public class Tally
+    /// <summary>
+    /// 记录数学表达式或统计表达式的数学相关
+    /// </summary>
+    internal class Tally
     {
         protected double _sum, _sum2, _cnt, _min, _max;
         protected bool _numbersOnly;
@@ -81,27 +84,37 @@ namespace CalcEngine.Functions.InternalFunction
                 }
             }
         }
+
         public double Count() { return _cnt; }
+
         public double Sum() { return _sum; }
+
         public double Average() { return _sum / _cnt; }
+
         public double Min() { return _min; }
+
         public double Max() { return _max; }
+
         public double Range() { return _max - _min; }
+
         public double VarP()
         {
             var avg = Average();
             return _cnt <= 1 ? 0 : _sum2 / _cnt - avg * avg;
         }
+
         public double StdP()
         {
             var avg = Average();
             return _cnt <= 1 ? 0 : Math.Sqrt(_sum2 / _cnt - avg * avg);
         }
+
         public double Var()
         {
             var avg = Average();
             return _cnt <= 1 ? 0 : (_sum2 / _cnt - avg * avg) * _cnt / (_cnt - 1);
         }
+
         public double Std()
         {
             var avg = Average();

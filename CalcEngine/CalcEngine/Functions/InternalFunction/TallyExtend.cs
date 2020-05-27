@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CalcEngine.Functions.InternalFunction
 {
-    public class TallyExtend : Tally
+    internal class TallyExtend : Tally
     {
         List<double> _vals;
 

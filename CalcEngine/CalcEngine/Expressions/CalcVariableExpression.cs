@@ -2,20 +2,23 @@
 
 namespace CalcEngine.Expressions
 {
-    class CalcVariableExpression : CalcExpression
+    /// <summary>
+    /// 字典键值
+    /// </summary>
+    internal class CalcVariableExpression : CalcExpression
     {
-        IDictionary<string, object> _dct;
-        string _name;
+        IDictionary<string, object> _dict;
+        string _key;
 
-        public CalcVariableExpression(IDictionary<string, object> dct, string name)
+        public CalcVariableExpression(IDictionary<string, object> dict, string key)
         {
-            _dct = dct;
-            _name = name;
+            _dict = dict;
+            _key = key;
         }
 
         public override object Evaluate()
         {
-            return _dct[_name];
+            return _dict[_key];
         }
     }
 }

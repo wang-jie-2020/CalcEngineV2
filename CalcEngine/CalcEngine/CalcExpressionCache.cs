@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using CalcEngine.Expressions;
 
-namespace CalcEngine.Expressions
+namespace CalcEngine
 {
     class CalcExpressionCache
     {

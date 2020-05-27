@@ -1,28 +1,39 @@
 ﻿namespace CalcEngine
 {
     /// <summary>
-    /// Represents a node in the expression tree.
+    /// 表达式树节点
     /// </summary>
     internal class Token
     {
-        // ** fields
-        public TKID ID;
-        public TKTYPE Type;
+        public Tkid Id;
+        public Tktype Type;
         public object Value;
 
-        // ** ctor
-        public Token(object value, TKID id, TKTYPE type)
+        public Token(object value, Tkid id, Tktype type)
         {
             Value = value;
-            ID = id;
+            Id = id;
             Type = type;
         }
     }
 
     /// <summary>
-    /// Token types (used when building expressions, sequence defines operator priority)
+    /// 表达式类型
     /// </summary>
-    internal enum TKTYPE
+    internal enum Tkid
+    {
+        GT, LT, GE, LE, EQ, NE, // COMPARE
+        ADD, SUB, // ADDSUB
+        MUL, DIV, DIVINT, MOD, // MULDIV
+        POWER, // POWER
+        OPEN, CLOSE, END, COMMA, PERIOD, // GROUP
+        ATOM, // LITERAL, IDENTIFIER
+    }
+
+    /// <summary>
+    /// 表达式优先级类型
+    /// </summary>
+    internal enum Tktype
     {
         COMPARE,	// < > = <= >=
         ADDSUB,		// + -
@@ -31,18 +42,5 @@
         GROUP,		// ( ) , .
         LITERAL,	// 123.32, "Hello", etc.
         IDENTIFIER  // functions, external objects, bindings
-    }
-
-    /// <summary>
-    /// Token ID (used when evaluating expressions)
-    /// </summary>
-    internal enum TKID
-    {
-        GT, LT, GE, LE, EQ, NE, // COMPARE
-        ADD, SUB, // ADDSUB
-        MUL, DIV, DIVINT, MOD, // MULDIV
-        POWER, // POWER
-        OPEN, CLOSE, END, COMMA, PERIOD, // GROUP
-        ATOM, // LITERAL, IDENTIFIER
     }
 }

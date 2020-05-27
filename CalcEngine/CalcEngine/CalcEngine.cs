@@ -81,7 +81,7 @@ namespace CalcEngine
             var expr = ParseExpression();
 
             // check for errors
-            if (_token.ID != TKID.END)
+            if (_token.Id != Tkid.END)
             {
                 Throw();
             }
@@ -111,6 +111,7 @@ namespace CalcEngine
             var x = _cache != null
                 ? _cache[expression]
                 : Parse(expression);
+
             return x.Evaluate();
         }
         /// <summary>
@@ -242,21 +243,21 @@ namespace CalcEngine
             if (_tkTbl == null)
             {
                 _tkTbl = new Dictionary<object, Token>();
-                AddToken('+', TKID.ADD, TKTYPE.ADDSUB);
-                AddToken('-', TKID.SUB, TKTYPE.ADDSUB);
-                AddToken('(', TKID.OPEN, TKTYPE.GROUP);
-                AddToken(')', TKID.CLOSE, TKTYPE.GROUP);
-                AddToken('*', TKID.MUL, TKTYPE.MULDIV);
-                AddToken('.', TKID.PERIOD, TKTYPE.GROUP);
-                AddToken('/', TKID.DIV, TKTYPE.MULDIV);
-                AddToken('\\', TKID.DIVINT, TKTYPE.MULDIV);
-                AddToken('=', TKID.EQ, TKTYPE.COMPARE);
-                AddToken('>', TKID.GT, TKTYPE.COMPARE);
-                AddToken('<', TKID.LT, TKTYPE.COMPARE);
-                AddToken('^', TKID.POWER, TKTYPE.POWER);
-                AddToken("<>", TKID.NE, TKTYPE.COMPARE);
-                AddToken(">=", TKID.GE, TKTYPE.COMPARE);
-                AddToken("<=", TKID.LE, TKTYPE.COMPARE);
+                AddToken('+', Tkid.ADD, Tktype.ADDSUB);
+                AddToken('-', Tkid.SUB, Tktype.ADDSUB);
+                AddToken('(', Tkid.OPEN, Tktype.GROUP);
+                AddToken(')', Tkid.CLOSE, Tktype.GROUP);
+                AddToken('*', Tkid.MUL, Tktype.MULDIV);
+                AddToken('.', Tkid.PERIOD, Tktype.GROUP);
+                AddToken('/', Tkid.DIV, Tktype.MULDIV);
+                AddToken('\\', Tkid.DIVINT, Tktype.MULDIV);
+                AddToken('=', Tkid.EQ, Tktype.COMPARE);
+                AddToken('>', Tkid.GT, Tktype.COMPARE);
+                AddToken('<', Tkid.LT, Tktype.COMPARE);
+                AddToken('^', Tkid.POWER, Tktype.POWER);
+                AddToken("<>", Tkid.NE, Tktype.COMPARE);
+                AddToken(">=", Tkid.GE, Tktype.COMPARE);
+                AddToken("<=", Tkid.LE, Tktype.COMPARE);
 
                 // list separator is localized, not necessarily a comma
                 // so it can't be on the static table
@@ -264,7 +265,7 @@ namespace CalcEngine
             }
             return _tkTbl;
         }
-        void AddToken(object symbol, TKID id, TKTYPE type)
+        void AddToken(object symbol, Tkid id, Tktype type)
         {
             var token = new Token(symbol, id, type);
             _tkTbl.Add(symbol, token);
@@ -300,7 +301,7 @@ namespace CalcEngine
         CalcExpression ParseCompare()
         {
             var x = ParseAddSub();
-            while (_token.Type == TKTYPE.COMPARE)
+            while (_token.Type == Tktype.COMPARE)
             {
                 var t = _token;
                 GetToken();
@@ -312,7 +313,7 @@ namespace CalcEngine
         CalcExpression ParseAddSub()
         {
             var x = ParseMulDiv();
-            while (_token.Type == TKTYPE.ADDSUB)
+            while (_token.Type == Tktype.ADDSUB)
             {
                 var t = _token;
                 GetToken();
@@ -324,7 +325,7 @@ namespace CalcEngine
         CalcExpression ParseMulDiv()
         {
             var x = ParsePower();
-            while (_token.Type == TKTYPE.MULDIV)
+            while (_token.Type == Tktype.MULDIV)
             {
                 var t = _token;
                 GetToken();
@@ -336,7 +337,7 @@ namespace CalcEngine
         CalcExpression ParsePower()
         {
             var x = ParseUnary();
-            while (_token.Type == TKTYPE.POWER)
+            while (_token.Type == Tktype.POWER)
             {
                 var t = _token;
                 GetToken();
@@ -348,7 +349,7 @@ namespace CalcEngine
         CalcExpression ParseUnary()
         {
             // unary plus and minus
-            if (_token.ID == TKID.ADD || _token.ID == TKID.SUB)
+            if (_token.Id == Tkid.ADD || _token.Id == Tkid.SUB)
             {
                 var t = _token;
                 GetToken();
@@ -368,12 +369,12 @@ namespace CalcEngine
             switch (_token.Type)
             {
                 // literals
-                case TKTYPE.LITERAL:
+                case Tktype.LITERAL:
                     x = new CalcExpression(_token);
                     break;
 
                 // identifiers
-                case TKTYPE.IDENTIFIER:
+                case Tktype.IDENTIFIER:
 
                     // get identifier
                     id = (string)_token.Value;
@@ -418,17 +419,17 @@ namespace CalcEngine
                         {
                             list.Add(new BindingInfo((string)t.Value, GetParameters()));
                         }
-                        x = new CalcBindingExpression(this, list, _ci);
+                        x = new CalcBindingExpression(this.DataContext, list, _ci);
                         break;
                     }
                     Throw("Unexpected identifier");
                     break;
 
                 // sub-expressions
-                case TKTYPE.GROUP:
+                case Tktype.GROUP:
 
                     // anything other than opening parenthesis is illegal here
-                    if (_token.ID != TKID.OPEN)
+                    if (_token.Id != Tkid.OPEN)
                     {
                         Throw("Expression expected.");
                     }
@@ -438,7 +439,7 @@ namespace CalcEngine
                     x = ParseCompare();
 
                     // check that the parenthesis was closed
-                    if (_token.ID != TKID.CLOSE)
+                    if (_token.Id != Tkid.CLOSE)
                     {
                         Throw("Unbalanced parenthesis.");
                     }
@@ -473,7 +474,7 @@ namespace CalcEngine
             // are we done?
             if (_ptr >= _len)
             {
-                _token = new Token(null, TKID.END, TKTYPE.GROUP);
+                _token = new Token(null, Tkid.END, Tktype.GROUP);
                 return;
             }
 
@@ -496,7 +497,7 @@ namespace CalcEngine
                     // look up localized list separator
                     if (c == _listSep)
                     {
-                        _token = new Token(c, TKID.COMMA, TKTYPE.GROUP);
+                        _token = new Token(c, Tkid.COMMA, Tktype.GROUP);
                         _ptr++;
                         return;
                     }
@@ -595,7 +596,7 @@ namespace CalcEngine
                 }
 
                 // build token
-                _token = new Token(val, TKID.ATOM, TKTYPE.LITERAL);
+                _token = new Token(val, Tkid.ATOM, Tktype.LITERAL);
 
                 // advance pointer and return
                 _ptr += i;
@@ -624,7 +625,7 @@ namespace CalcEngine
                 // end of string
                 var lit = _expr.Substring(_ptr + 1, i - 1);
                 _ptr += i + 1;
-                _token = new Token(lit.Replace("\"\"", "\""), TKID.ATOM, TKTYPE.LITERAL);
+                _token = new Token(lit.Replace("\"\"", "\""), Tkid.ATOM, Tktype.LITERAL);
                 return;
             }
 
@@ -647,7 +648,7 @@ namespace CalcEngine
                 // end of date
                 var lit = _expr.Substring(_ptr + 1, i - 1);
                 _ptr += i + 1;
-                _token = new Token(DateTime.Parse(lit, _ci), TKID.ATOM, TKTYPE.LITERAL);
+                _token = new Token(DateTime.Parse(lit, _ci), Tkid.ATOM, Tktype.LITERAL);
                 return;
             }
 
@@ -672,7 +673,7 @@ namespace CalcEngine
             // got identifier
             var id = _expr.Substring(_ptr, i);
             _ptr += i;
-            _token = new Token(id, TKID.ATOM, TKTYPE.IDENTIFIER);
+            _token = new Token(id, Tkid.ATOM, Tktype.IDENTIFIER);
         }
         static double ParseDouble(string str, CultureInfo ci)
         {
@@ -690,7 +691,7 @@ namespace CalcEngine
             var pos = _ptr;
             var tk = _token;
             GetToken();
-            if (_token.ID != TKID.OPEN)
+            if (_token.Id != Tkid.OPEN)
             {
                 _ptr = pos;
                 _token = tk;
@@ -700,7 +701,7 @@ namespace CalcEngine
             // check for empty Parameter list
             pos = _ptr;
             GetToken();
-            if (_token.ID == TKID.CLOSE)
+            if (_token.Id == Tkid.CLOSE)
             {
                 return null;
             }
@@ -710,14 +711,14 @@ namespace CalcEngine
             var parms = new List<CalcExpression>();
             var expr = ParseExpression();
             parms.Add(expr);
-            while (_token.ID == TKID.COMMA)
+            while (_token.Id == Tkid.COMMA) 
             {
                 expr = ParseExpression();
                 parms.Add(expr);
             }
 
             // make sure the list was closed correctly
-            if (_token.ID != TKID.CLOSE)
+            if (_token.Id != Tkid.CLOSE)
             {
                 Throw();
             }
@@ -732,7 +733,7 @@ namespace CalcEngine
             var pos = _ptr;
             var tk = _token;
             GetToken();
-            if (_token.ID != TKID.PERIOD)
+            if (_token.Id != Tkid.PERIOD)
             {
                 _ptr = pos;
                 _token = tk;
@@ -741,7 +742,7 @@ namespace CalcEngine
 
             // skip member token
             GetToken();
-            if (_token.Type != TKTYPE.IDENTIFIER)
+            if (_token.Type != Tktype.IDENTIFIER)
             {
                 Throw("Identifier expected");
             }
@@ -757,6 +758,7 @@ namespace CalcEngine
         {
             Throw("Syntax error.");
         }
+
         static void Throw(string msg)
         {
             throw new Exception(msg);

@@ -2,16 +2,13 @@
 
 namespace CalcEngine.Expressions
 {
-    class CalcFunctionExpression : CalcExpression
+    /// <summary>
+    /// 类似委托表达式，计算函数结果
+    /// </summary>
+    internal class CalcFunctionExpression : CalcExpression
     {
-        // ** fields
         FunctionDefinition _fn;
         List<CalcExpression> _parms;
-
-        // ** ctor
-        internal CalcFunctionExpression()
-        {
-        }
 
         public CalcFunctionExpression(FunctionDefinition function, List<CalcExpression> parms)
         {
@@ -19,8 +16,7 @@ namespace CalcEngine.Expressions
             _parms = parms;
         }
 
-        // ** object model
-        override public object Evaluate()
+        public override object Evaluate()
         {
             return _fn.Function(_parms);
         }
@@ -34,7 +30,7 @@ namespace CalcEngine.Expressions
                 {
                     var p = _parms[i].Optimize();
                     _parms[i] = p;
-                    if (p._token.Type != TKTYPE.LITERAL)
+                    if (p._token.Type != Tktype.LITERAL)
                     {
                         allLits = false;
                     }
