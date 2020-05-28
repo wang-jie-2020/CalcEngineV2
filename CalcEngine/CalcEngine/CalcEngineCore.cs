@@ -56,7 +56,7 @@ namespace CalcEngine
                 AddToken("<>", Tkid.NE, Tktype.COMPARE);
                 AddToken(">=", Tkid.GE, Tktype.COMPARE);
                 AddToken("<=", Tkid.LE, Tktype.COMPARE);
-                //AddToken(',', Tkid.COMMA, Tktype.GROUP);       // list separator is localized, not necessarily a comma,so it can't be on the static table
+                //AddToken(',', Tkid.COMMA, Tktype.GROUP);     //','不能作为默认的分割符号，因为在本地环境下可能是不一样的
             }
         }
 
@@ -129,20 +129,16 @@ namespace CalcEngine
             return expr;
         }
 
-        #region 核心函数
+
+        #region ParseExpression
 
         string _expr;    //表达式                  
         int _len;        //表达式长度                
         int _ptr;        //当前指向 
         Token _token;    //当前Token               
 
-        #region ** private stuff
+        #region Parse
 
-        /// <summary>
-        /// 过程开始
-        /// </summary>
-        /// <returns
-        /// ></returns>
         CalcExpression ParseExpression()
         {
             GetToken();
@@ -203,7 +199,7 @@ namespace CalcEngine
 
         CalcExpression ParseUnary()
         {
-            // unary plus and minus
+            //第一个操作符是‘+’或‘-’的作为一元表达式，比Net中的Expression少一些
             if (_token.Id == Tkid.ADD || _token.Id == Tkid.SUB)
             {
                 var t = _token;
@@ -212,7 +208,6 @@ namespace CalcEngine
                 return new CalcUnaryExpression(t, a);
             }
 
-            // not unary, return atom
             return ParseAtom();
         }
 
@@ -224,21 +219,17 @@ namespace CalcEngine
 
             switch (_token.Type)
             {
-                // literals
-                case Tktype.LITERAL:
+                case Tktype.LITERAL:    //字面量，不用处理，作为CalcExpression返回即可
                     x = new CalcExpression(_token);
                     break;
-
-                // identifiers
-                case Tktype.IDENTIFIER:
-
-                    // get identifier
+                case Tktype.IDENTIFIER: //标识，可能来自功能、外部数据源
                     id = (string)_token.Value;
 
-                    // look for functions
                     if (_fns.TryGetValue(id, out fnDef))
                     {
                         var p = GetParameters();
+
+                        //检查参数个数是否符合功能定义
                         var pCnt = p == null ? 0 : p.Count;
                         if (fnDef.ParmMin != -1 && pCnt < fnDef.ParmMin)
                         {
@@ -248,17 +239,17 @@ namespace CalcEngine
                         {
                             Throw("Too many parameters.");
                         }
+
                         x = new CalcFunctionExpression(fnDef, p);
+                        break;
                     }
 
-                    // look for simple variables (much faster than binding!)
                     if (Variables.ContainsKey(id))
                     {
                         x = new CalcVariableExpression(Variables, id);
                         break;
                     }
 
-                    // look for external objects
                     var xObj = GetExternalObject(id);
                     if (xObj != null)
                     {
@@ -266,7 +257,6 @@ namespace CalcEngine
                         break;
                     }
 
-                    // look for bindings
                     if (DataContext != null)
                     {
                         var list = new List<BindingInfo>();
@@ -274,26 +264,20 @@ namespace CalcEngine
                         {
                             list.Add(new BindingInfo((string)t.Value, GetParameters()));
                         }
+
                         x = new CalcBindingExpression(this.DataContext, list, _ci);
                         break;
                     }
                     Throw("Unexpected identifier");
                     break;
-
-                // sub-expressions
                 case Tktype.GROUP:
-
-                    // anything other than opening parenthesis is illegal here
                     if (_token.Id != Tkid.OPEN)
                     {
                         Throw("Expression expected.");
                     }
-
-                    // get expression
                     GetToken();
                     x = ParseCompare();
 
-                    // check that the parenthesis was closed
                     if (_token.Id != Tkid.CLOSE)
                     {
                         Throw("Unbalanced parenthesis.");
@@ -308,14 +292,96 @@ namespace CalcEngine
                 Throw();
             }
 
-            // done
             GetToken();
             return x;
         }
 
+        /// <summary>
+        /// 参数列表
+        /// </summary>
+        /// <returns></returns>
+        List<CalcExpression> GetParameters()
+        {
+            var pos = _ptr;
+            var tk = _token;
+
+            /*
+             *  如果下一个符号不是'('，则不再需要继续，当前Token就是参数
+             */
+            GetToken();
+            if (_token.Id != Tkid.OPEN)
+            {
+                _ptr = pos;
+                _token = tk;
+                return null;
+            }
+
+            /*
+             *   如果'('的下一个符号是')'，则表示没有参数
+             */
+            pos = _ptr;
+            GetToken();
+            if (_token.Id == Tkid.CLOSE)
+            {
+                return null;
+            }
+            _ptr = pos;
+
+            /*
+             *  以'('为开始，且下一个符号不是')'，表示有参数
+             */
+            var parms = new List<CalcExpression>();
+            var expr = ParseExpression();
+            parms.Add(expr);
+            while (_token.Id == Tkid.COMMA)
+            {
+                expr = ParseExpression();
+                parms.Add(expr);
+            }
+
+            if (_token.Id != Tkid.CLOSE)
+            {
+                Throw();
+            }
+
+            return parms;
+        }
+
+        /// <summary>
+        ///  实例对象的成员访问
+        /// </summary>
+        /// <returns></returns>
+        Token GetMember()
+        {
+            var pos = _ptr;
+            var tk = _token;
+
+            /*
+             *  对成员的访问是以'.'进行的，比如Address.City
+             *  若下一个符号不是'.'，则不必继续
+             */
+            GetToken();
+            if (_token.Id != Tkid.PERIOD)
+            {
+                _ptr = pos;
+                _token = tk;
+                return null;
+            }
+
+            /*
+             * 若已经是‘.’，则下一个token必须是标识
+             */
+            GetToken();
+            if (_token.Type != Tktype.IDENTIFIER)
+            {
+                Throw("Identifier expected");
+            }
+            return _token;
+        }
+
         #endregion
 
-        #region ** parser
+        #region GetToken
 
         void GetToken()
         {
@@ -403,9 +469,7 @@ namespace CalcEngine
                 if (!isNumber)
                 {
                     /*
-                     *  不理解这个if的含义：
-                     *  _listSep表示本地化下的数字步长分割标志，比如中文下1,000,000的','
-                     *  存在单独出现情况？
+                     *   _listSep表示本地化下的分割标志，','只是其中一种可能？
                      */
                     if (c == _listSep)
                     {
@@ -443,7 +507,7 @@ namespace CalcEngine
             if (isDigit || c == _decimal)
             {
                 var sci = false;    //科学计数
-                var pct = false;    //百度比
+                var pct = false;    //百分比
 
                 var div = -1.0;
                 var val = 0.0;
@@ -502,7 +566,7 @@ namespace CalcEngine
                 else
                 {
                     var lit = _expr.Substring(_ptr, index);
-                    val = ParseDouble(lit, _ci);
+                    val = PercentParseDouble(lit, _ci);
                 }
 
                 _token = new Token(val, Tkid.ATOM, Tktype.LITERAL);
@@ -537,7 +601,13 @@ namespace CalcEngine
             _token = new Token(id, Tkid.ATOM, Tktype.IDENTIFIER);
         }
 
-        double ParseDouble(string str, CultureInfo ci)
+        /// <summary>
+        ///  百分比转Double
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="ci"></param>
+        /// <returns></returns>
+        double PercentParseDouble(string str, CultureInfo ci)
         {
             if (str.Length > 0 && str[str.Length - 1] == ci.NumberFormat.PercentSymbol[0])
             {
@@ -545,72 +615,6 @@ namespace CalcEngine
                 return double.Parse(str, NumberStyles.Any, ci) / 100.0;
             }
             return double.Parse(str, NumberStyles.Any, ci);
-        }
-
-        List<CalcExpression> GetParameters() // e.g. myfun(a, b, c+2)
-        {
-            // check whether next token is a (, 
-            // restore state and bail if it's not
-            var pos = _ptr;
-            var tk = _token;
-            GetToken();
-            if (_token.Id != Tkid.OPEN)
-            {
-                _ptr = pos;
-                _token = tk;
-                return null;
-            }
-
-            // check for empty Parameter list
-            pos = _ptr;
-            GetToken();
-            if (_token.Id == Tkid.CLOSE)
-            {
-                return null;
-            }
-            _ptr = pos;
-
-            // get Parameters until we reach the end of the list
-            var parms = new List<CalcExpression>();
-            var expr = ParseExpression();
-            parms.Add(expr);
-            while (_token.Id == Tkid.COMMA)
-            {
-                expr = ParseExpression();
-                parms.Add(expr);
-            }
-
-            // make sure the list was closed correctly
-            if (_token.Id != Tkid.CLOSE)
-            {
-                Throw();
-            }
-
-            // done
-            return parms;
-        }
-
-        Token GetMember()
-        {
-            // check whether next token is a MEMBER token ('.'), 
-            // restore state and bail if it's not
-            var pos = _ptr;
-            var tk = _token;
-            GetToken();
-            if (_token.Id != Tkid.PERIOD)
-            {
-                _ptr = pos;
-                _token = tk;
-                return null;
-            }
-
-            // skip member token
-            GetToken();
-            if (_token.Type != Tktype.IDENTIFIER)
-            {
-                Throw("Identifier expected");
-            }
-            return _token;
         }
 
         #endregion
