@@ -64,6 +64,7 @@ namespace CalcEngine.Functions
             return GetTally(p, false).Count();
         }
 
+        //此处感觉不太对，new CalcEngine()后原CalcEngine的数据都不在了
         //static object CountBlank(List<CalcExpression> p)
         //{
         //    var cnt = 0.0;
@@ -150,6 +151,7 @@ namespace CalcEngine.Functions
             return GetTally(p, false).Sum();
         }
 
+        //此处感觉不太对，new CalcEngine()后原CalcEngine的数据都不在了
         //static object SumIf(List<CalcExpression> p)
         //{
         //    // get parameters
