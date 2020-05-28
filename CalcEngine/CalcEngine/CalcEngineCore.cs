@@ -640,6 +640,12 @@ namespace CalcEngine
         #endregion
     }
 
+    /// <summary>
+    /// 王杰 2020-05-28
+    /// 新建类型保存字典、上下文的直接目的：
+    /// 当某些情况下需要对外部数据源进行修改已达到功能扩展时，比如集合功能
+    /// 若不已引用类型包裹，无法对表达式内的已传递数据修改；有好有坏，受限于架子
+    /// </summary>
     internal class innerDataSource
     {
         internal object DataContext { get; set; }
