@@ -25,8 +25,23 @@ namespace CalcEngine.Functions.InternalFunction
 
         public void Add(CalcExpression e)
         {
-            if (e is IEnumerable ienum)
+            //if (e is IEnumerable ienum)
+            //{
+            //    foreach (var value in ienum)
+            //    {
+            //        AddValue(value);
+            //    }
+            //    return;
+            //}
+
+            //AddValue(e.Evaluate());
+
+            var r = e.Evaluate();
+
+            if (r is IEnumerable && !(r is string))
             {
+                var ienum = r as IEnumerable;
+
                 foreach (var value in ienum)
                 {
                     AddValue(value);
@@ -34,7 +49,7 @@ namespace CalcEngine.Functions.InternalFunction
                 return;
             }
 
-            AddValue(e.Evaluate());
+            AddValue(r);
         }
 
         public virtual void AddValue(object value)
