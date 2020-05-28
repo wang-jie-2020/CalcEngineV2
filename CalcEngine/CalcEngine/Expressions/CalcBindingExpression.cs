@@ -10,20 +10,20 @@ namespace CalcEngine.Expressions
     /// </summary>
     internal class CalcBindingExpression : CalcExpression
     {
-        object _dataContext;
-        List<BindingInfo> _bindingPath;
-        CultureInfo _ci;
+        private readonly innerDataSource _innerData;
+        private readonly List<BindingInfo> _bindingPath;
+        private readonly CultureInfo _ci;
 
-        internal CalcBindingExpression(object dataContext, List<BindingInfo> bindingPath, CultureInfo ci)
+        internal CalcBindingExpression(innerDataSource innerData, List<BindingInfo> bindingPath, CultureInfo ci)
         {
-            _dataContext = dataContext;
+            _innerData = innerData;
             _bindingPath = bindingPath;
             _ci = ci;
         }
 
         public override object Evaluate()
         {
-            return GetValue(_dataContext);
+            return GetValue(_innerData.DataContext);
         }
 
         object GetValue(object obj)
@@ -47,7 +47,7 @@ namespace CalcEngine.Expressions
                     {
                         obj = bi.PropertyInfo.GetValue(obj, null);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         //System.Diagnostics.Debug.Assert(false, "shouldn't happen!");
                     }

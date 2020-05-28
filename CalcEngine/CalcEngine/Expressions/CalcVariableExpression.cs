@@ -7,18 +7,18 @@ namespace CalcEngine.Expressions
     /// </summary>
     internal class CalcVariableExpression : CalcExpression
     {
-        IDictionary<string, object> _dict;
-        string _key;
+        private readonly innerDataSource _innerData;
+        private readonly string _key;
 
-        public CalcVariableExpression(IDictionary<string, object> dict, string key)
+        public CalcVariableExpression(innerDataSource innerData, string key)
         {
-            _dict = dict;
+            _innerData = innerData;
             _key = key;
         }
 
         public override object Evaluate()
         {
-            return _dict[_key];
+            return _innerData.Variables[_key];
         }
     }
 }

@@ -33,21 +33,6 @@ namespace CalcEngineTest.Expression
             Assert.Equal(students[0], result);
         }
 
-
-        //[Fact]
-        //public void ShouldScoreSumEquals()
-        //{
-        //    var result = calcEngine.Evaluate("SUM(Score)");
-        //    Assert.Equal(students.Sum(o => o.Score), result);
-        //}
-
-        //[Fact]
-        //public void ShouldAddressCityConcatEquals()
-        //{
-        //    var result = calcEngine.Evaluate("Concat(Address.City)");
-        //    Assert.Equal(string.Concat(students.Select(p => p.Address.City)), result);
-        //}
-
         public void Dispose()
         {
             calcEngine = null;

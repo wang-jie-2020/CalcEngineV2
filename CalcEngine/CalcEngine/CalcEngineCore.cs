@@ -31,6 +31,8 @@ namespace CalcEngine
         //符号集,+-*/
         Dictionary<object, Token> _tks;
 
+        innerDataSource _inData;
+
         #endregion
 
         #region Init
@@ -76,6 +78,8 @@ namespace CalcEngine
                 MathFunction.Register(this);
                 TextFunction.Register(this);
                 StatisticalFunction.Register(this);
+
+                (new CollectionFunction(this)).Register();
             }
         }
 
@@ -243,9 +247,9 @@ namespace CalcEngine
                         break;
                     }
 
-                    if (Variables.ContainsKey(id))
+                    if (_inData.Variables.ContainsKey(id))
                     {
-                        x = new CalcVariableExpression(Variables, id);
+                        x = new CalcVariableExpression(_inData, id);
                         break;
                     }
 
@@ -256,7 +260,7 @@ namespace CalcEngine
                         break;
                     }
 
-                    if (DataContext != null)
+                    if (_inData != null)
                     {
                         var list = new List<BindingInfo>();
                         for (var t = _token; t != null; t = GetMember())
@@ -264,7 +268,7 @@ namespace CalcEngine
                             list.Add(new BindingInfo((string)t.Value, GetParameters()));
                         }
 
-                        x = new CalcBindingExpression(this.DataContext, list, _ci);
+                        x = new CalcBindingExpression(_inData, list, _ci);
                         break;
                     }
 
@@ -634,5 +638,12 @@ namespace CalcEngine
         }
 
         #endregion
+    }
+
+    internal class innerDataSource
+    {
+        internal object DataContext { get; set; }
+
+        internal IDictionary<string, object> Variables { get; set; }
     }
 }

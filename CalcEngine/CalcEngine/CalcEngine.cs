@@ -14,7 +14,13 @@ namespace CalcEngine
         public CalcEngine()
         {
             CultureInfo = CultureInfo.InvariantCulture;
+
             _cache = new CalcExpressionCache(this);
+
+            _inData = new innerDataSource()
+            {
+                Variables = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            };
 
             InitSymbol();
             InitFunction();
@@ -42,12 +48,32 @@ namespace CalcEngine
         /// <summary>
         /// 外部数据源-变量字典
         /// </summary>
-        public IDictionary<string, object> Variables { get; set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        public IDictionary<string, object> Variables
+        {
+            get { return _inData?.Variables; }
+            set
+            {
+                if (_inData == null)
+                    _inData = new innerDataSource();
+
+                _inData.Variables = value;
+            }
+        }
 
         /// <summary>
         /// 外部数据源-数据上下文
         /// </summary>
-        public object DataContext { get; set; }
+        public object DataContext
+        {
+            get { return _inData?.DataContext; }
+            set
+            {
+                if (_inData == null)
+                    _inData = new innerDataSource();
+
+                _inData.DataContext = value;
+            }
+        }
 
         /// <summary>
         /// 是否缓存解析的表达式，默认缓存
