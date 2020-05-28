@@ -47,9 +47,9 @@ namespace CalcEngine.Expressions
                     {
                         obj = bi.PropertyInfo.GetValue(obj, null);
                     }
-                    catch
+                    catch(Exception ex)
                     {
-                        System.Diagnostics.Debug.Assert(false, "shouldn't happen!");
+                        //System.Diagnostics.Debug.Assert(false, "shouldn't happen!");
                     }
 
                     if (bi.Parms != null && bi.Parms.Count > 0)

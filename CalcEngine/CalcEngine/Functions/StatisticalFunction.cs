@@ -147,12 +147,7 @@ namespace CalcEngine.Functions
 
         static object Sum(List<CalcExpression> p)
         {
-            var tally = new Tally();
-            foreach (CalcExpression e in p)
-            {
-                tally.Add(e);
-            }
-            return tally.Sum();
+            return GetTally(p, false).Sum();
         }
 
         //static object SumIf(List<CalcExpression> p)

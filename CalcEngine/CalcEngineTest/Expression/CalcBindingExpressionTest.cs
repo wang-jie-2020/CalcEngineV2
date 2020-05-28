@@ -15,17 +15,7 @@ namespace CalcEngineTest.Expression
         public CalcBindingExpressionTest()
         {
             calcEngine = new CalcEngine.CalcEngine();
-            calcEngine.DataContext = student = new Student
-            {
-                Id = 1,
-                Name = "zhangsan",
-                Age = 21,
-                Address = new Address
-                {
-                    Province = "jiangsu",
-                    City = "jiangyin"
-                }
-            };
+            calcEngine.DataContext = student = TestData.GetStudent();
         }
 
         [Fact]
@@ -36,10 +26,12 @@ namespace CalcEngineTest.Expression
         }
 
         [Fact]
-        public void ShouldAgeEquals()
+        public void ShouldNameLengthEquals()
         {
-            var result = calcEngine.Evaluate("IF(Age>20,Age*0.8,Age)");
-            Assert.Equal(student.Age > 20 ? student.Age * 0.8 : student.Age, result);
+            calcEngine.OptimizeExpressions = false;
+
+            var result = calcEngine.Evaluate("Name.Length * 2");
+            Assert.Equal(student.Name.Length * 2, int.Parse(result.ToString()));
         }
 
         [Fact]
@@ -54,6 +46,13 @@ namespace CalcEngineTest.Expression
         {
             var result = calcEngine.Evaluate("Address.City");
             Assert.Equal(student.Address.City, result);
+        }
+
+        [Fact]
+        public void ShouldAgeFunctionEquals()
+        {
+            var result = calcEngine.Evaluate("IF(Age>20,Age*0.8,Age)");
+            Assert.Equal(student.Age > 20 ? student.Age * 0.8 : student.Age, (int)result);
         }
 
         public void Dispose()

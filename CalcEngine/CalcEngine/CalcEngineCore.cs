@@ -129,7 +129,6 @@ namespace CalcEngine
             return expr;
         }
 
-
         #region ParseExpression
 
         string _expr;    //表达式                  
@@ -268,6 +267,7 @@ namespace CalcEngine
                         x = new CalcBindingExpression(this.DataContext, list, _ci);
                         break;
                     }
+
                     Throw("Unexpected identifier");
                     break;
                 case Tktype.GROUP:
